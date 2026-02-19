@@ -8,8 +8,10 @@ export default function Card({ card, handleClick }) {
       onClick={() => !card.isMatched && handleClick(card)}
     >
       <div className="inner">
-        <div className="front">{card.value}</div>
-        <div className="back">🎴</div>
+        <div className={`front ${card.value.includes("♥") || card.value.includes("♦") ? "red" : ""}`}>
+          {card.value}
+        </div>
+        <div className="back">🂠</div>
       </div>
     </div>
   );

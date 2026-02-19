@@ -1,48 +1,73 @@
 import React, { useEffect, useState } from "react";
 import Card from "./Card";
-import { shuffle } from "../utils/shuffle";
+import Timer from "./Timer";
 import Confetti from "react-confetti";
+import { shuffle } from "../utils/shuffle";
 
 const MAX_CARDS = 32;
+const suits = ["♠", "♥", "♦", "♣"];
+const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
 export default function GameBoard() {
-  const [level, setLevel] = useState(6);
+  const [cardCount, setCardCount] = useState(6);
+  const [levelNumber, setLevelNumber] = useState(1);
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [resetTimerKey, setResetTimerKey] = useState(0);
 
   useEffect(() => {
-    initializeGame(level);
-  }, [level]);
+    initializeGame(cardCount);
+  }, [cardCount]);
 
-  function initializeGame(cardCount) {
-    const pairCount = cardCount / 2;
-    const values = Array.from({ length: pairCount }, (_, i) => i + 1);
+  function generateCards(count) {
+    const deck = [];
+    for (let suit of suits) {
+      for (let rank of ranks) {
+        deck.push(`${rank}${suit}`);
+      }
+    }
 
-    const cardData = shuffle(
-      [...values, ...values].map((value, index) => ({
+    const selected = shuffle(deck).slice(0, count / 2);
+
+    return shuffle(
+      [...selected, ...selected].map((value, index) => ({
         id: index,
         value,
         isFlipped: false,
-        isMatched: false,
+        isMatched: false
       }))
     );
+  }
 
-    setCards(cardData);
+  function initializeGame(count) {
+    setCards(generateCards(count));
     setFlipped([]);
     setMatchedPairs(0);
+  }
+
+  function getLevelDuration(level) {
+    if (level <= 3) return 30;
+    if (level <= 8) return 40;
+    return 50;
+  }
+
+  function handleTimeUp() {
+    alert("⏰ Time's up! Restarting level.");
+    initializeGame(cardCount);
+    setResetTimerKey((prev) => prev + 1);
   }
 
   function handleClick(card) {
     if (flipped.length === 2) return;
 
-    const newCards = cards.map((c) =>
+    const updatedCards = cards.map((c) =>
       c.id === card.id ? { ...c, isFlipped: true } : c
     );
 
     const newFlipped = [...flipped, card];
-    setCards(newCards);
+    setCards(updatedCards);
     setFlipped(newFlipped);
 
     if (newFlipped.length === 2) {
@@ -55,7 +80,6 @@ export default function GameBoard() {
 
     if (first.value === second.value) {
       setShowConfetti(true);
-
       setTimeout(() => setShowConfetti(false), 800);
 
       setCards((prev) =>
@@ -74,17 +98,19 @@ export default function GameBoard() {
               : c
           )
         );
-      }, 1000);
+      }, 800);
     }
 
-    setTimeout(() => setFlipped([]), 1000);
+    setTimeout(() => setFlipped([]), 800);
   }
 
   useEffect(() => {
-    if (matchedPairs === level / 2) {
+    if (matchedPairs === cardCount / 2) {
       setTimeout(() => {
-        if (level < MAX_CARDS) {
-          setLevel((prev) => prev + 2);
+        if (cardCount < MAX_CARDS) {
+          setCardCount((prev) => prev + 2);
+          setLevelNumber((prev) => prev + 1);
+          setResetTimerKey((prev) => prev + 1);
         } else {
           alert("🏆 You completed all levels!");
         }
@@ -93,14 +119,23 @@ export default function GameBoard() {
   }, [matchedPairs]);
 
   return (
-    <>
+    <div>
       {showConfetti && <Confetti />}
-      <h2>Level: {level} cards</h2>
+      <h2>
+        Level {levelNumber} ({cardCount} cards)
+      </h2>
+
+      <Timer
+        duration={getLevelDuration(levelNumber)}
+        onTimeUp={handleTimeUp}
+        resetTrigger={resetTimerKey}
+      />
+
       <div className="board">
         {cards.map((card) => (
           <Card key={card.id} card={card} handleClick={handleClick} />
         ))}
       </div>
-    </>
+    </div>
   );
 }

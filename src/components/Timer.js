@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from "react";
 
-export default function Timer({ isActive, onTimeUp }) {
-  const [time, setTime] = useState(0);
+export default function Timer({ duration, onTimeUp, resetTrigger }) {
+  const [timeLeft, setTimeLeft] = useState(duration);
 
   useEffect(() => {
-    let interval = null;
+    setTimeLeft(duration);
+  }, [resetTrigger, duration]);
 
-    if (isActive) {
-      interval = setInterval(() => {
-        setTime((t) => t + 1);
-      }, 1000);
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      onTimeUp();
+      return;
     }
 
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
     return () => clearInterval(interval);
-  }, [isActive]);
+  }, [timeLeft]);
+
+  const warning = timeLeft <= 5;
 
   return (
-    <div className="timer">
-      ⏱ {time}s
+    <div className={`timer ${warning ? "warning" : ""}`}>
+      ⏳ {timeLeft}s
     </div>
   );
 }
