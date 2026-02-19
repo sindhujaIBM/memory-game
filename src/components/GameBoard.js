@@ -19,6 +19,24 @@ function useWindowSize() {
   return size;
 }
 
+// Precomputed row/col map for perfect layout
+const gridMap = {
+  6: [2,3],   // 2 rows × 3 cols
+  8: [2,4],
+  10: [2,5],
+  12: [3,4],
+  14: [2,7],
+  16: [4,4],
+  18: [3,6],
+  20: [4,5],
+  22: [2,11],
+  24: [4,6],
+  26: [2,13],
+  28: [4,7],
+  30: [5,6],
+  32: [4,8]
+};
+
 export default function GameBoard() {
   const { width, height } = useWindowSize();
 
@@ -89,7 +107,6 @@ export default function GameBoard() {
   function checkMatch(flippedCards, event){
     const [first, second] = flippedCards;
     if(first.rank===second.rank && first.suit===second.suit) {
-      // Get bounding rect to position confetti
       const rect = event.target.getBoundingClientRect();
       setConfettiPosition({ x: rect.left + rect.width/2, y: rect.top + rect.height/2 });
       setShowConfetti(true);
@@ -123,6 +140,9 @@ export default function GameBoard() {
     }
   },[matchedPairs]);
 
+  // Use gridMap for perfect rows/cols
+  const cols = gridMap[cardCount] ? gridMap[cardCount][1] : Math.ceil(Math.sqrt(cardCount));
+
   return (
     <div ref={boardRef}>
       {showConfetti && 
@@ -145,7 +165,10 @@ export default function GameBoard() {
         resetTrigger={resetTimerKey}
       />
 
-      <div className="board">
+      <div 
+        className="board" 
+        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+      >
         {cards.map(card=>(
           <Card
             key={card.id}

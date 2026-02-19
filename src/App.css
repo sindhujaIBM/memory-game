@@ -11,14 +11,16 @@ body {
   margin-top: 20px;
 }
 
+/* Board container */
 .board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5em, 1fr));
   gap: 15px;
-  max-width: 700px;
+  max-width: 900px;
   margin: 20px auto;
+  justify-content: center; /* Center the grid horizontally */
 }
 
+/* Timer styling */
 .timer {
   font-size: 2rem;
   margin: 15px;
@@ -30,10 +32,23 @@ body {
   animation: shake 0.5s infinite;
 }
 
+/* Shake animation for timer warning */
 @keyframes shake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
   50% { transform: translateX(4px); }
   75% { transform: translateX(-4px); }
   100% { transform: translateX(0); }
+}
+
+/* Optional: Center App container */
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Card container adjustments */
+.card {
+  margin: 0 auto;
 }
