@@ -14,7 +14,7 @@ export default function Timer({ duration, onTimeUp, resetTrigger }) {
     }
 
     const interval = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
+      setTimeLeft(prev => prev - 1);
     }, 1000);
 
     return () => clearInterval(interval);

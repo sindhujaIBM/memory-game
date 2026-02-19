@@ -1,0 +1,66 @@
+.card {
+  width: 5em;
+  height: 7em;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 0.5em;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.2em;
+  position: relative;
+  cursor: pointer;
+}
+
+.card.red {
+  color: red;
+}
+
+.card.black {
+  color: black;
+}
+
+.card-corner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.top-left {
+  align-items: flex-start;
+}
+
+.bottom-right {
+  align-items: flex-end;
+  transform: rotate(180deg); /* Rotate the bottom corner */
+}
+
+.card-rank {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.card-suit {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.card-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.card-suit.large {
+  font-size: 3em;
+}
+
+.card-back {
+  background-color: #4169e1; /* Royal blue color for the back */
+  height: 100%;
+  width: 100%;
+  border-radius: 0.5em;
+  /* Add a pattern or logo here if desired */
+}

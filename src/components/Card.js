@@ -1,18 +1,43 @@
-import React from "react";
-import "../App.css";
+import React from 'react';
+import './Card.css';
 
-export default function Card({ card, handleClick }) {
+// Map suit codes to their Unicode characters and colors
+const suitMap = {
+  'H': { symbol: '♥', color: 'red' },
+  'D': { symbol: '♦', color: 'red' },
+  'C': { symbol: '♣', color: 'black' },
+  'S': { symbol: '♠', color: 'black' },
+};
+
+const Card = ({ rank, suit, onClick, isFaceUp }) => {
+  // Use a class for card back logic if not using a separate back component
+  const cardContent = isFaceUp ? (
+    <>
+      <div className="card-corner top-left">
+        <span className="card-rank">{rank}</span>
+        <span className="card-suit">{suitMap[suit].symbol}</span>
+      </div>
+      <div className="card-center">
+        <span className="card-suit large">{suitMap[suit].symbol}</span>
+      </div>
+      <div className="card-corner bottom-right">
+        <span className="card-rank">{rank}</span>
+        <span className="card-suit">{suitMap[suit].symbol}</span>
+      </div>
+    </>
+  ) : (
+    // Simple back design
+    <div className="card-back"></div>
+  );
+
   return (
     <div
-      className={`card ${card.isFlipped ? "flipped" : ""}`}
-      onClick={() => !card.isMatched && handleClick(card)}
+      className={`card ${suitMap[suit].color} ${isFaceUp ? 'face-up' : 'face-down'}`}
+      onClick={onClick}
     >
-      <div className="inner">
-        <div className={`front ${card.value.includes("♥") || card.value.includes("♦") ? "red" : ""}`}>
-          {card.value}
-        </div>
-        <div className="back">🂠</div>
-      </div>
+      {cardContent}
     </div>
   );
-}
+};
+
+export default Card;
