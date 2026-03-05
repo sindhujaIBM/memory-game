@@ -52,3 +52,83 @@ body {
 .card {
   margin: 0 auto;
 }
+
+/* ── Game stats bar ── */
+.game-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.pairs-tracker {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+.best-time {
+  background: rgba(255, 215, 0, 0.25);
+  color: gold;
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+/* ── Modal overlay ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: #1e3c72;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 40px 48px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: modal-pop 0.2s ease;
+}
+
+@keyframes modal-pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.modal-icon {
+  font-size: 3.5rem;
+  margin-bottom: 8px;
+}
+
+.modal h2 {
+  font-size: 2rem;
+  margin: 0 0 8px;
+}
+
+.modal p {
+  margin: 0 0 24px;
+  opacity: 0.85;
+}
+
+.modal-btn {
+  background: white;
+  color: #1e3c72;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.modal-btn:hover {
+  opacity: 0.85;
+}

@@ -11,6 +11,12 @@
   padding: 0.2em;
   position: relative;
   cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.card:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
 }
 
 .card.red {
@@ -19,6 +25,28 @@
 
 .card.black {
   color: black;
+}
+
+/* Matched: green tint, no pointer */
+.card.matched {
+  background-color: #e8f5e9;
+  border-color: #81c784;
+  cursor: default;
+  opacity: 0.85;
+}
+
+/* Mismatch: red flash + shake */
+.card.mismatched {
+  animation: mismatch-flash 0.7s ease forwards;
+}
+
+@keyframes mismatch-flash {
+  0%   { background-color: #fff;    transform: translateX(0); }
+  20%  { background-color: #ffcccc; transform: translateX(-5px); }
+  40%  { background-color: #ffcccc; transform: translateX(5px); }
+  60%  { background-color: #ffcccc; transform: translateX(-5px); }
+  80%  { background-color: #ffcccc; transform: translateX(3px); }
+  100% { background-color: #fff;    transform: translateX(0); }
 }
 
 .card-corner {
@@ -33,7 +61,7 @@
 
 .bottom-right {
   align-items: flex-end;
-  transform: rotate(180deg); /* Rotate the bottom corner */
+  transform: rotate(180deg);
 }
 
 .card-rank {
@@ -58,9 +86,8 @@
 }
 
 .card-back {
-  background-color: #4169e1; /* Royal blue color for the back */
+  background-color: #4169e1;
   height: 100%;
   width: 100%;
   border-radius: 0.5em;
-  /* Add a pattern or logo here if desired */
 }
