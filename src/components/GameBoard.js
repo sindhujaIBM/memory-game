@@ -54,6 +54,7 @@ export default function GameBoard() {
   const [confettiPosition, setConfettiPosition] = useState({ x: 0, y: 0 });
   const [resetTimerKey, setResetTimerKey] = useState(0);
   const [modal, setModal]               = useState(null); // { type: 'timeup' | 'victory' }
+  const [isPaused, setIsPaused]         = useState(false);
   const [bestTimes, setBestTimes]       = useState(() => {
     try { return JSON.parse(localStorage.getItem(BEST_TIMES_KEY)) || {}; }
     catch { return {}; }
@@ -65,10 +66,12 @@ export default function GameBoard() {
   const levelAdvanceTimeoutRef = useRef(null);
 
   // Stable refs so handleClick (useCallback with []) can read latest state
-  const cardsRef   = useRef(cards);
-  const flippedRef = useRef(flipped);
-  useEffect(() => { cardsRef.current = cards; },   [cards]);
+  const cardsRef    = useRef(cards);
+  const flippedRef  = useRef(flipped);
+  const isPausedRef = useRef(isPaused);
+  useEffect(() => { cardsRef.current = cards; },     [cards]);
   useEffect(() => { flippedRef.current = flipped; }, [flipped]);
+  useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
 
   // Ref so matchedPairs effect can read levelNumber without adding it to deps
   const levelNumberRef = useRef(levelNumber);
@@ -118,6 +121,7 @@ export default function GameBoard() {
     setMatchedPairs(0);
     setMismatchedIds([]);
     setShowConfetti(false);
+    setIsPaused(false);
     levelStartTimeRef.current = Date.now();
   }
 
@@ -158,6 +162,7 @@ export default function GameBoard() {
     const cards   = cardsRef.current;
     const flipped = flippedRef.current;
 
+    if (isPausedRef.current) return;
     if (flipped.length === 2) return;
 
     const card = cards.find(c => c.id === cardId);
@@ -294,29 +299,46 @@ export default function GameBoard() {
         )}
       </div>
 
-      <Timer
-        duration={getLevelDuration(levelNumber)}
-        onTimeUp={handleTimeUp}
-        resetTrigger={resetTimerKey}
-      />
+      <div className="timer-row">
+        <Timer
+          duration={getLevelDuration(levelNumber)}
+          onTimeUp={handleTimeUp}
+          resetTrigger={resetTimerKey}
+          isPaused={isPaused}
+        />
+        <button
+          className="pause-btn"
+          onClick={() => setIsPaused(p => !p)}
+          aria-label={isPaused ? "Resume game" : "Pause game"}
+        >
+          {isPaused ? "▶ Resume" : "⏸ Pause"}
+        </button>
+      </div>
 
       {/* ── Board ── */}
-      <div
-        className="board"
-        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-      >
-        {cards.map(card => (
-          <Card
-            key={card.id}
-            id={card.id}
-            rank={card.rank}
-            suit={card.suit}
-            isFaceUp={card.isFaceUp}
-            isMatched={card.isMatched}
-            isMismatched={mismatchedIds.includes(card.id)}
-            onCardClick={handleClick}
-          />
-        ))}
+      <div className="board-wrapper">
+        {isPaused && (
+          <div className="board-pause-overlay">
+            <span>PAUSED</span>
+          </div>
+        )}
+        <div
+          className="board"
+          style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+        >
+          {cards.map(card => (
+            <Card
+              key={card.id}
+              id={card.id}
+              rank={card.rank}
+              suit={card.suit}
+              isFaceUp={card.isFaceUp}
+              isMatched={card.isMatched}
+              isMismatched={mismatchedIds.includes(card.id)}
+              onCardClick={handleClick}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

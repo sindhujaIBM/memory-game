@@ -1,21 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
 
-export default function Timer({ duration, onTimeUp, resetTrigger }) {
+export default function Timer({ duration, onTimeUp, resetTrigger, isPaused }) {
   const [timeLeft, setTimeLeft] = useState(duration);
-  const onTimeUpRef = useRef(onTimeUp);
+  const onTimeUpRef  = useRef(onTimeUp);
+  const isPausedRef  = useRef(isPaused);
 
-  // Keep ref current so the interval never captures a stale onTimeUp
-  useEffect(() => {
-    onTimeUpRef.current = onTimeUp;
-  });
+  useEffect(() => { onTimeUpRef.current = onTimeUp; });
+  useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
 
-  // Single interval per level — recreated only when duration or resetTrigger changes
+  // Single interval per level — pausing skips the decrement tick
   useEffect(() => {
     setTimeLeft(duration);
     let remaining = duration;
 
     const interval = setInterval(() => {
+      if (isPausedRef.current) return;
       remaining -= 1;
       if (remaining <= 0) {
         clearInterval(interval);
@@ -42,4 +42,9 @@ Timer.propTypes = {
   duration: PropTypes.number.isRequired,
   onTimeUp: PropTypes.func.isRequired,
   resetTrigger: PropTypes.number.isRequired,
+  isPaused: PropTypes.bool,
+};
+
+Timer.defaultProps = {
+  isPaused: false,
 };

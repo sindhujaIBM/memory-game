@@ -53,6 +53,55 @@ body {
   margin: 0 auto;
 }
 
+/* ── Timer row (timer + pause button) ── */
+.timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.pause-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pause-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Board wrapper + pause overlay ── */
+.board-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.board-pause-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 30, 70, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 8px;
+  backdrop-filter: blur(3px);
+}
+
+.board-pause-overlay span {
+  font-size: 3rem;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  color: white;
+  opacity: 0.9;
+}
+
 /* ── Game stats bar ── */
 .game-stats {
   display: flex;
