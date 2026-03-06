@@ -75,6 +75,13 @@ export default function GameBoard() {
   // Last chosen difficulty for pre-selection in picker
   const [lastDifficulty, setLastDifficulty]       = useState('Medium');
 
+  // Hint state
+  const [hintsLeft, setHintsLeft] = useState(3);
+  const [isHinting, setIsHinting] = useState(false);
+  const isHintingRef = useRef(false);
+  const hintTimeoutRef = useRef(null);
+  useEffect(() => { isHintingRef.current = isHinting; }, [isHinting]);
+
   // Timeout refs — cleared on unmount and on level restart to prevent stale updates
   const flipBackTimeoutRef     = useRef(null);
   const confettiTimeoutRef     = useRef(null);
@@ -101,6 +108,7 @@ export default function GameBoard() {
       clearTimeout(flipBackTimeoutRef.current);
       clearTimeout(confettiTimeoutRef.current);
       clearTimeout(levelAdvanceTimeoutRef.current);
+      clearTimeout(hintTimeoutRef.current);
     };
   }, []);
 
@@ -131,6 +139,9 @@ export default function GameBoard() {
     setMismatchedIds([]);
     setShowConfetti(false);
     setIsPaused(false);
+    setHintsLeft(3);
+    setIsHinting(false);
+    clearTimeout(hintTimeoutRef.current);
     levelStartTimeRef.current = Date.now();
   }
 
@@ -142,6 +153,20 @@ export default function GameBoard() {
         : GAME_CONFIG.TIME_LIMIT_HIGH;
     const multiplier = DIFFICULTY[diff]?.multiplier ?? 1;
     return Math.round(base * multiplier);
+  }
+
+  // ── Hint ───────────────────────────────────────────────────────────────────
+
+  function handleHint() {
+    if (hintsLeft === 0 || isHinting || isPaused) return;
+    setHintsLeft(prev => prev - 1);
+    setIsHinting(true);
+    setCards(prev => prev.map(c => c.isMatched ? c : { ...c, isFaceUp: true }));
+    hintTimeoutRef.current = setTimeout(() => {
+      setCards(prev => prev.map(c => c.isMatched ? c : { ...c, isFaceUp: false }));
+      setFlipped([]);
+      setIsHinting(false);
+    }, 1500);
   }
 
   // ── Difficulty picker ──────────────────────────────────────────────────────
@@ -194,6 +219,7 @@ export default function GameBoard() {
     const flipped = flippedRef.current;
 
     if (isPausedRef.current) return;
+    if (isHintingRef.current) return;
     if (flipped.length === 2) return;
 
     const card = cards.find(c => c.id === cardId);
@@ -365,6 +391,14 @@ export default function GameBoard() {
           resetTrigger={resetTimerKey}
           isPaused={isPaused}
         />
+        <button
+          className="hint-btn"
+          onClick={handleHint}
+          disabled={hintsLeft === 0 || isHinting || isPaused}
+          aria-label={`Hint (${hintsLeft} left)`}
+        >
+          💡 Hint ({hintsLeft})
+        </button>
         <button
           className="pause-btn"
           onClick={() => setIsPaused(p => !p)}
