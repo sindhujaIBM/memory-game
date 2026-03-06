@@ -16,6 +16,12 @@ const GAME_CONFIG = {
   TIME_LIMIT_HIGH: 50,  // levels 9+
 };
 
+const DIFFICULTY = {
+  Easy:   { label: 'Easy',   emoji: '🌱', multiplier: 1.75, hint: '+75% time' },
+  Medium: { label: 'Medium', emoji: '🔥', multiplier: 1.0,  hint: 'base time' },
+  Hard:   { label: 'Hard',   emoji: '💀', multiplier: 0.6,  hint: '-40% time' },
+};
+
 const BEST_TIMES_KEY = 'memory-game-best-times';
 const suits = ['H', 'D', 'C', 'S'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -60,6 +66,15 @@ export default function GameBoard() {
     catch { return {}; }
   });
 
+  // Difficulty — null means picker is showing, selected value is the active difficulty key
+  const [difficulty, setDifficulty]               = useState(null);
+  const [showDifficultyPicker, setShowDifficultyPicker] = useState(true);
+  // Pending state for the level about to start (populated when picker opens mid-game)
+  const pendingCardCountRef  = useRef(GAME_CONFIG.INITIAL_CARDS);
+  const pendingLevelNumberRef = useRef(1);
+  // Last chosen difficulty for pre-selection in picker
+  const [lastDifficulty, setLastDifficulty]       = useState('Medium');
+
   // Timeout refs — cleared on unmount and on level restart to prevent stale updates
   const flipBackTimeoutRef     = useRef(null);
   const confettiTimeoutRef     = useRef(null);
@@ -88,12 +103,6 @@ export default function GameBoard() {
       clearTimeout(levelAdvanceTimeoutRef.current);
     };
   }, []);
-
-  // Re-init when cardCount changes (level advance or reset)
-  useEffect(() => {
-    initializeGame(cardCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardCount]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -125,10 +134,36 @@ export default function GameBoard() {
     levelStartTimeRef.current = Date.now();
   }
 
-  function getLevelDuration(level) {
-    if (level <= 3) return GAME_CONFIG.TIME_LIMIT_LOW;
-    if (level <= 8) return GAME_CONFIG.TIME_LIMIT_MID;
-    return GAME_CONFIG.TIME_LIMIT_HIGH;
+  function getLevelDuration(level, diff) {
+    const base = level <= 3
+      ? GAME_CONFIG.TIME_LIMIT_LOW
+      : level <= 8
+        ? GAME_CONFIG.TIME_LIMIT_MID
+        : GAME_CONFIG.TIME_LIMIT_HIGH;
+    const multiplier = DIFFICULTY[diff]?.multiplier ?? 1;
+    return Math.round(base * multiplier);
+  }
+
+  // ── Difficulty picker ──────────────────────────────────────────────────────
+
+  function openDifficultyPicker(nextCardCount, nextLevel) {
+    pendingCardCountRef.current  = nextCardCount;
+    pendingLevelNumberRef.current = nextLevel;
+    setShowDifficultyPicker(true);
+  }
+
+  function confirmDifficulty(key) {
+    setDifficulty(key);
+    setLastDifficulty(key);
+    setShowDifficultyPicker(false);
+
+    // Apply pending level state
+    const nextCount = pendingCardCountRef.current;
+    const nextLevel = pendingLevelNumberRef.current;
+    setCardCount(nextCount);
+    setLevelNumber(nextLevel);
+    initializeGame(nextCount);
+    setResetTimerKey(prev => prev + 1);
   }
 
   // ── Modal ──────────────────────────────────────────────────────────────────
@@ -145,13 +180,9 @@ export default function GameBoard() {
     setModal(null);
 
     if (type === 'timeup') {
-      initializeGame(cardCount);
-      setResetTimerKey(prev => prev + 1);
+      openDifficultyPicker(cardCount, levelNumber);
     } else if (type === 'victory') {
-      // Reset to level 1; cardCount change triggers initializeGame via useEffect
-      setLevelNumber(1);
-      setCardCount(GAME_CONFIG.INITIAL_CARDS);
-      setResetTimerKey(prev => prev + 1);
+      openDifficultyPicker(GAME_CONFIG.INITIAL_CARDS, 1);
     }
   }
 
@@ -234,9 +265,7 @@ export default function GameBoard() {
 
     levelAdvanceTimeoutRef.current = setTimeout(() => {
       if (cardCount < GAME_CONFIG.MAX_CARDS) {
-        setCardCount(prev => prev + 2);
-        setLevelNumber(prev => prev + 1);
-        setResetTimerKey(prev => prev + 1);
+        openDifficultyPicker(cardCount + 2, levelNumberRef.current + 1);
       } else {
         setModal({ type: 'victory' });
       }
@@ -245,12 +274,37 @@ export default function GameBoard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const cols      = gridMap[cardCount] ? gridMap[cardCount][1] : Math.ceil(Math.sqrt(cardCount));
+  const cols       = gridMap[cardCount] ? gridMap[cardCount][1] : Math.ceil(Math.sqrt(cardCount));
   const totalPairs = cardCount / 2;
-  const bestTime  = bestTimes[levelNumber];
+  const bestTime   = bestTimes[levelNumber];
+  const activeDiff = difficulty ?? lastDifficulty;
 
   return (
     <div>
+      {/* ── Difficulty Picker Modal ── */}
+      {showDifficultyPicker && (
+        <div className="modal-overlay">
+          <div className="modal difficulty-modal">
+            <div className="modal-icon">🃏</div>
+            <h2>Level {pendingLevelNumberRef.current}</h2>
+            <p>Choose your difficulty</p>
+            <div className="difficulty-picker">
+              {Object.entries(DIFFICULTY).map(([key, { label, emoji, hint }]) => (
+                <button
+                  key={key}
+                  className={`diff-btn ${key.toLowerCase()}${lastDifficulty === key ? ' selected' : ''}`}
+                  onClick={() => confirmDifficulty(key)}
+                >
+                  <span className="diff-emoji">{emoji}</span>
+                  <span className="diff-label">{label}</span>
+                  <span className="diff-hint">{hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Modal overlay ── */}
       {modal && (
         <div className="modal-overlay">
@@ -294,6 +348,11 @@ export default function GameBoard() {
 
       <div className="game-stats">
         <span className="pairs-tracker">{matchedPairs} / {totalPairs} pairs matched</span>
+        {difficulty && (
+          <span className={`difficulty-badge ${activeDiff.toLowerCase()}`}>
+            {DIFFICULTY[activeDiff].emoji} {activeDiff}
+          </span>
+        )}
         {bestTime !== undefined && (
           <span className="best-time">Best: {bestTime}s</span>
         )}
@@ -301,7 +360,7 @@ export default function GameBoard() {
 
       <div className="timer-row">
         <Timer
-          duration={getLevelDuration(levelNumber)}
+          duration={getLevelDuration(levelNumber, activeDiff)}
           onTimeUp={handleTimeUp}
           resetTrigger={resetTimerKey}
           isPaused={isPaused}

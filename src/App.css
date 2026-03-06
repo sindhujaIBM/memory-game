@@ -181,3 +181,77 @@ body {
 .modal-btn:hover {
   opacity: 0.85;
 }
+
+/* ── Difficulty picker ── */
+.difficulty-modal {
+  padding: 36px 40px;
+}
+
+.difficulty-picker {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.diff-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px 22px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  min-width: 90px;
+}
+
+.diff-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.diff-btn.selected {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.diff-btn.easy:hover,
+.diff-btn.easy.selected  { border-color: #6ee76e; }
+
+.diff-btn.medium:hover,
+.diff-btn.medium.selected { border-color: #f5a623; }
+
+.diff-btn.hard:hover,
+.diff-btn.hard.selected   { border-color: #f56262; }
+
+.diff-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.diff-label {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.diff-hint {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+/* ── Difficulty badge in stats bar ── */
+.difficulty-badge {
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.difficulty-badge.easy   { color: #6ee76e; }
+.difficulty-badge.medium { color: #f5a623; }
+.difficulty-badge.hard   { color: #f56262; }
