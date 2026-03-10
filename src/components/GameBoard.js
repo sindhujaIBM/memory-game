@@ -171,24 +171,30 @@ export default function GameBoard() {
 
   // ── Difficulty picker ──────────────────────────────────────────────────────
 
-  function openDifficultyPicker(nextCardCount, nextLevel) {
-    pendingCardCountRef.current  = nextCardCount;
-    pendingLevelNumberRef.current = nextLevel;
-    setShowDifficultyPicker(true);
-  }
-
-  function confirmDifficulty(key) {
+  function applyDifficulty(key, count, level) {
     setDifficulty(key);
     setLastDifficulty(key);
     setShowDifficultyPicker(false);
-
-    // Apply pending level state
-    const nextCount = pendingCardCountRef.current;
-    const nextLevel = pendingLevelNumberRef.current;
-    setCardCount(nextCount);
-    setLevelNumber(nextLevel);
-    initializeGame(nextCount);
+    setCardCount(count);
+    setLevelNumber(level);
+    initializeGame(count);
     setResetTimerKey(prev => prev + 1);
+  }
+
+  // force=true always shows the picker (manual change button); otherwise skips
+  // the picker if difficulty was already chosen, auto-applying lastDifficulty.
+  function openDifficultyPicker(nextCardCount, nextLevel, force = false) {
+    pendingCardCountRef.current  = nextCardCount;
+    pendingLevelNumberRef.current = nextLevel;
+    if (!force && difficulty !== null) {
+      applyDifficulty(lastDifficulty, nextCardCount, nextLevel);
+    } else {
+      setShowDifficultyPicker(true);
+    }
+  }
+
+  function confirmDifficulty(key) {
+    applyDifficulty(key, pendingCardCountRef.current, pendingLevelNumberRef.current);
   }
 
   // ── Modal ──────────────────────────────────────────────────────────────────
@@ -389,7 +395,7 @@ export default function GameBoard() {
           duration={getLevelDuration(levelNumber, activeDiff)}
           onTimeUp={handleTimeUp}
           resetTrigger={resetTimerKey}
-          isPaused={isPaused}
+          isPaused={isPaused || showDifficultyPicker}
         />
         <button
           className="hint-btn"
@@ -398,6 +404,14 @@ export default function GameBoard() {
           aria-label={`Hint (${hintsLeft} left)`}
         >
           💡 Hint ({hintsLeft})
+        </button>
+        <button
+          className="difficulty-change-btn"
+          onClick={() => openDifficultyPicker(cardCount, levelNumber, true)}
+          disabled={isPaused || showDifficultyPicker}
+          aria-label="Change difficulty"
+        >
+          🎯 {activeDiff}
         </button>
         <button
           className="pause-btn"
